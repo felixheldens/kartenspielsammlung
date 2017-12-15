@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="de.mkg_wegberg.kartenspielsammlung">
+
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/starticon"
+        android:label="@string/app_name"
+        android:roundIcon="@drawable/starticon"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity android:name=".Hauptmenue">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".Modus_Waehlen" />
+        <activity android:name=".Einstellungen" />
+        <activity android:name=".Statistiken" />
+        <activity android:name=".Hilfe" />
+        <activity android:name=".Shop" />
+        <activity android:name=".Credits" />
+        <activity android:name=".MauMau_konfigurieren" />
+        <activity android:name=".Spiel" />
+        <activity android:name=".EndScreen"></activity>
+    </application>
+
+</manifest>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="de.mkg_wegberg.kartenspielsammlung.Hauptmenue">
+
+
+    <Button
+        android:id="@+id/bSPstartenId"
+        android:layout_width="300dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="20dp"
+        android:text="SP Spiel starten"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
+
+    <Button
+        android:id="@+id/bEinstellungenId"
+        android:layout_width="300dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="80dp"
+        android:text="Einstellungen"
+        android:layout_alignTop="@+id/bSPstartenId"
+        android:layout_centerHorizontal="true" />
+
+    <Button
+        android:id="@+id/bStatistikenId"
+        android:layout_width="300dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="80dp"
+        android:text="Statistiken"
+        android:layout_alignTop="@+id/bEinstellungenId"
+        android:layout_centerHorizontal="true" />
+
+    <Button
+        android:id="@+id/bHilfeId"
+        android:layout_width="300dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="80dp"
+        android:text="Hilfe"
+        android:layout_alignTop="@+id/bStatistikenId"
+        android:layout_centerHorizontal="true" />
+
+    <Button
+        android:id="@+id/bShopId"
+        android:layout_width="300dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="80dp"
+        android:text="Shop"
+        android:layout_alignTop="@+id/bHilfeId"
+        android:layout_centerHorizontal="true" />
+
+    <Button
+        android:id="@+id/bCreditsId"
+        android:layout_width="300dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="80dp"
+        android:text="Version/Credits"
+        android:layout_alignTop="@+id/bShopId"
+        android:layout_centerHorizontal="true" />
+
+</RelativeLayout>
