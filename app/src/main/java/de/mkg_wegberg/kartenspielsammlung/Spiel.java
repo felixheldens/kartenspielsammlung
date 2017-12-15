@@ -130,7 +130,7 @@ public class Spiel extends AppCompatActivity implements View.OnClickListener
                 gewaehltesAblegen(0);
                 break;
             case R.id.bZiehenId:
-                bots();
+                botzug();
                 //ziehen(0);
                 break;
 
@@ -340,19 +340,28 @@ public class Spiel extends AppCompatActivity implements View.OnClickListener
 
     private void botzug()
     {
-        ArrayList<Karte> temp = (((Bot) (spielerliste.get(current))).macheZug());
-        for(int i = 0; i < temp.size(); i++)
-        {
-            stapel.add(0, temp.get(0));
-            temp.remove(0);
-        }
-        aktualisiereAktuelleKarte();
-        hatGewonnen(spielerliste.get(current));
-        tStatus.setText("Bot " + current + " hat gelegt");
-        zugVorbei();
-        if(stapel.get(0).getNummer() == "8") {
-            tStatus.setText("Spieler " + current + " wird übergangen!");
+        if(spielerliste.get(current).istBot()) {
+            tStatus.setText("Bot " + current + " ist am Zug.");
+            verwaltung.delay(1000);
+            ArrayList<Karte> temp = (((Bot) (spielerliste.get(current))).macheZug());
+            for (int i = 0; i < temp.size(); i++) {
+                stapel.add(0, temp.get(0));
+                temp.remove(0);
+            }
+            aktualisiereAktuelleKarte();
+            hatGewonnen(spielerliste.get(current));
+            tStatus.setText("Bot " + current + " hat gelegt");
+            //verwaltung.delay(500);
             zugVorbei();
+            if (stapel.get(0).getNummer() == "8") {
+                tStatus.setText("Spieler " + current + " wird übergangen!");
+                //verwaltung.delay(500);
+                zugVorbei();
+            }
+        }
+        else
+        {
+            tStatus.setText("Du bist dran.");
         }
     }
 
