@@ -12,8 +12,9 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import java.util.ArrayList;
+
+//VCSTEST xD
 
 public class Spiel extends AppCompatActivity implements View.OnClickListener
 {
