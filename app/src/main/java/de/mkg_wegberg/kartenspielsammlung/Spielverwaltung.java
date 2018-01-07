@@ -108,6 +108,7 @@ public class Spielverwaltung
         return zufall;
     }
 
+
     public void delay(int pDauer)
     {
         try {
@@ -116,7 +117,6 @@ public class Spielverwaltung
             e.printStackTrace();
         }
     }
-
 
 
 

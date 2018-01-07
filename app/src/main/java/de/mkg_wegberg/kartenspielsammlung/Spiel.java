@@ -12,6 +12,7 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import java.util.ArrayList;
 
 //VCSTEST xD
@@ -131,7 +132,9 @@ public class Spiel extends AppCompatActivity implements View.OnClickListener
                 gewaehltesAblegen(0);
                 break;
             case R.id.bZiehenId:
-                botzug();
+                bots();
+                //botzug();
+                bots();
                 //ziehen(0);
                 break;
 
@@ -281,26 +284,23 @@ public class Spiel extends AppCompatActivity implements View.OnClickListener
         }
     }
 
-    public boolean darfLegen(ArrayList<Karte> pListe)
+    public boolean darfLegen(Karte pKarte)
     {
         Karte vgl = stapel.get(0);
-        for(int i = 0; i < pListe.size(); i++)
-        {
-            switch(vgl.getNummer()) {
-                //@TODO Sonderfälle implementieren
-                case "bube":
-                    break;
-                case "7":
-                    break;
-                default:
-                    if (vgl.getName().equals(pListe.get(i))) {
-                        return true;
-                    } else {
-                        return false;
-                    }
+        switch(vgl.getNummer()) {
+            //@TODO Sonderfälle implementieren
+            case "bube":
+                break;
+            case "7":
+                break;
+            default:
+                if (vgl.getName().equals(pKarte.getName())) {
+                    return true;
+                } else {
+                    return false;
+                }
 
             }
-        }
         return false;
     }
 
@@ -329,41 +329,43 @@ public class Spiel extends AppCompatActivity implements View.OnClickListener
 
     private void bots()
     {
-        while(spielerliste.get(current).istBot())
-        {
-            tStatus.setText("Bot " + current + " ist dran!");
-            verwaltung.delay(1000);
-            botzug();
-        }
-        tStatus.setText("Du bist dran!");
+        this.runOnUiThread (new Thread(new Runnable() {
+            public void run() {
+                while (spielerliste.get(current).istBot()) {
+                    tStatus.setText("Bot " + current + " ist dran!");
+                    verwaltung.delay(1000);
+                    botzug();
+                }
+                tStatus.setText("Du bist dran!");
+            }
+        }));
     }
+
 
 
     private void botzug()
     {
-        if(spielerliste.get(current).istBot()) {
-            tStatus.setText("Bot " + current + " ist am Zug.");
-            verwaltung.delay(1000);
-            ArrayList<Karte> temp = (((Bot) (spielerliste.get(current))).macheZug());
-            for (int i = 0; i < temp.size(); i++) {
-                stapel.add(0, temp.get(0));
-                temp.remove(0);
+        this.runOnUiThread (new Thread(new Runnable() {
+            public void run() {
+                    tStatus.setText("Bot " + current + " ist am Zug.");
+                    ArrayList<Karte> temp = (((Bot) (spielerliste.get(current))).macheZug());
+                    for (int i = 0; i < temp.size(); i++) {
+                        stapel.add(0, temp.get(0));
+                        temp.remove(0);
+                    }
+                    aktualisiereAktuelleKarte();
+                    hatGewonnen(spielerliste.get(current));
+                    tStatus.setText("Bot " + current + " hat gelegt");
+                    verwaltung.delay(500);
+                    zugVorbei();
+                    if (stapel.get(0).getNummer() == "8") {
+                        tStatus.setText("Spieler " + current + " wird übergangen!");
+                        verwaltung.delay(500);
+                        zugVorbei();
+                    }
+
             }
-            aktualisiereAktuelleKarte();
-            hatGewonnen(spielerliste.get(current));
-            tStatus.setText("Bot " + current + " hat gelegt");
-            //verwaltung.delay(500);
-            zugVorbei();
-            if (stapel.get(0).getNummer() == "8") {
-                tStatus.setText("Spieler " + current + " wird übergangen!");
-                //verwaltung.delay(500);
-                zugVorbei();
-            }
-        }
-        else
-        {
-            tStatus.setText("Du bist dran.");
-        }
+        }));
     }
 
     private void spielende()
@@ -434,4 +436,6 @@ public class Spiel extends AppCompatActivity implements View.OnClickListener
             j++;
        }
     }
+
+
 }
