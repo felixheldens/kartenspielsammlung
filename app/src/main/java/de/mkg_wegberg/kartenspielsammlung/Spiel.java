@@ -16,6 +16,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 
 //VCSTEST xD
+//noinspection GradleCompatible
 
 public class Spiel extends AppCompatActivity implements View.OnClickListener
 {
@@ -59,6 +60,7 @@ public class Spiel extends AppCompatActivity implements View.OnClickListener
     private int spieleranzahl;
     private int anzahlProSpieler;
     private int zaehlen;
+    int i = 0;
 
     private int current = 0;
 
@@ -141,6 +143,8 @@ public class Spiel extends AppCompatActivity implements View.OnClickListener
             default: break;
         }
     }
+
+
 
 
 
@@ -244,11 +248,31 @@ public class Spiel extends AppCompatActivity implements View.OnClickListener
 
     private void aktualisiereAktuelleKarte()
     {
-        Karte temp = stapel.get(0);
-        bild = temp.getBilder();
+        new Thread() {
+            public void run() {
 
-        int bildId = getResources().getIdentifier(bild , "drawable", getPackageName());
-        iAktuelleKarte.setImageResource(bildId);
+                while (i++ < 1000) {
+                    try {
+                        runOnUiThread(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                Karte temp = stapel.get(0);
+                                bild = temp.getBilder();
+
+                                int bildId = getResources().getIdentifier(bild , "drawable", getPackageName());
+                                iAktuelleKarte.setImageResource(bildId);
+                            }
+                        });
+                        Thread.sleep(600);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }.start();
+
+
     }
 
     private void gewaehltesAblegen(int pSpielernummer)
@@ -329,43 +353,127 @@ public class Spiel extends AppCompatActivity implements View.OnClickListener
 
     private void bots()
     {
-        this.runOnUiThread (new Thread(new Runnable() {
-            public void run() {
-                while (spielerliste.get(current).istBot()) {
-                    tStatus.setText("Bot " + current + " ist dran!");
-                    verwaltung.delay(1000);
-                    botzug();
+        while (spielerliste.get(current).istBot()) {
+            new Thread() {
+                public void run() {
+
+                    while (i++ < 1000) {
+                        try {
+                            runOnUiThread(new Runnable() {
+
+                                @Override
+                                public void run() {
+                                    tStatus.setText("Bot " + current + " ist dran!");
+                                }
+                            });
+                            Thread.sleep(600);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
-                tStatus.setText("Du bist dran!");
+            }.start();
+            botzug();
+        }
+
+        new Thread() {
+            public void run() {
+
+                while (i++ < 1000) {
+                    try {
+                        runOnUiThread(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                tStatus.setText("Du bist dran!");
+                            }
+                        });
+                        Thread.sleep(600);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
-        }));
+        }.start();
     }
 
 
 
     private void botzug()
     {
-        this.runOnUiThread (new Thread(new Runnable() {
+        new Thread() {
             public void run() {
-                    tStatus.setText("Bot " + current + " ist am Zug.");
-                    ArrayList<Karte> temp = (((Bot) (spielerliste.get(current))).macheZug());
-                    for (int i = 0; i < temp.size(); i++) {
-                        stapel.add(0, temp.get(0));
-                        temp.remove(0);
+
+                while (i++ < 1000) {
+                    try {
+                        runOnUiThread(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                tStatus.setText("Bot " + current + " ist am Zug.");
+                            }
+                        });
+                        Thread.sleep(600);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
-                    aktualisiereAktuelleKarte();
-                    hatGewonnen(spielerliste.get(current));
-                    tStatus.setText("Bot " + current + " hat gelegt");
-                    verwaltung.delay(500);
+                }
+            }
+        }.start();
+
+        ArrayList<Karte> temp = (((Bot) (spielerliste.get(current))).macheZug());
+        for (int i = 0; i < temp.size(); i++) {
+            stapel.add(0, temp.get(0));
+            temp.remove(0);
+        }
+        aktualisiereAktuelleKarte();
+        hatGewonnen(spielerliste.get(current));
+
+        new Thread() {
+            public void run() {
+
+                while (i++ < 1000) {
+                    try {
+                        runOnUiThread(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                tStatus.setText("Bot " + current + " hat gelegt.");
+                            }
+                        });
+                        Thread.sleep(600);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }.start();
                     zugVorbei();
                     if (stapel.get(0).getNummer() == "8") {
-                        tStatus.setText("Spieler " + current + " wird übergangen!");
-                        verwaltung.delay(500);
+                        new Thread() {
+                            public void run() {
+
+                                while (i++ < 1000) {
+                                    try {
+                                        runOnUiThread(new Runnable() {
+
+                                            @Override
+                                            public void run() {
+                                                tStatus.setText("Spieler " + current + " wird übergangen!");
+                                            }
+                                        });
+                                        Thread.sleep(600);
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }
+                        }.start();
                         zugVorbei();
                     }
 
-            }
-        }));
+
+
     }
 
     private void spielende()
