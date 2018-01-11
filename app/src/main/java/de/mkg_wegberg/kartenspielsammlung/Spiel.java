@@ -1,8 +1,10 @@
 package de.mkg_wegberg.kartenspielsammlung;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
@@ -14,9 +16,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-
-//VCSTEST xD
-//noinspection GradleCompatible
+import java.util.Timer;
 
 public class Spiel extends AppCompatActivity implements View.OnClickListener
 {
@@ -60,7 +60,7 @@ public class Spiel extends AppCompatActivity implements View.OnClickListener
     private int spieleranzahl;
     private int anzahlProSpieler;
     private int zaehlen;
-    int i = 0;
+    private int thread = 0;
 
     private int current = 0;
 
@@ -68,7 +68,7 @@ public class Spiel extends AppCompatActivity implements View.OnClickListener
     private boolean nachMenge;
 
     private String bild;
-
+    private String status;
 
 
     @Override
@@ -126,6 +126,7 @@ public class Spiel extends AppCompatActivity implements View.OnClickListener
         aktualisiereHand(0);
     }
 
+
     public void onClick(View v)
     {
         switch (v.getId())
@@ -134,17 +135,13 @@ public class Spiel extends AppCompatActivity implements View.OnClickListener
                 gewaehltesAblegen(0);
                 break;
             case R.id.bZiehenId:
-                bots();
-                //botzug();
-                bots();
+                botzug();
                 //ziehen(0);
                 break;
 
             default: break;
         }
     }
-
-
 
 
 
@@ -179,371 +176,241 @@ public class Spiel extends AppCompatActivity implements View.OnClickListener
 
     private void setzeStatus(String pStatus)
     {
-        tStatus.setText(pStatus);
-    }
+        status = pStatus;
 
-    private void erzeugeSpieler()
-    {
-        if(spielerliste.isEmpty())
-        {
-            for (int i = 0; i < botanzahl; i++)
-            {
-                Bot bot = new Bot(i + "", this);
-                spielerliste.add(0, bot);
-            }
-
-            for (int i = 0; i < playeranzahl; i++)
-            {
-                Player player = new Player(i + "", this);
-                spielerliste.add(0, player);
-            }
-        }
-    }
-
-    private void mischen()
-    {
-        kartendeck = verwaltung.mischeKarten(kartendeck);
-    }
-
-    private void austeilen(boolean nachMenge)
-    {
-        if(!nachMenge)
-        {
-            while (kartendeck.size() > 10)
-            {
-                for (int i = 0; i < spieleranzahl; i++) {
-                    spielerliste.get(i).gebeKarte(kartendeck.get(0));
-                    kartendeck.remove(0);
-                }
-            }
-            stapel.add(0, kartendeck.get(0));
-            kartendeck.remove(0);
-            ziehStapel = kartendeck;
-        }
-        else
-        {
-            if((spieleranzahl * anzahlProSpieler + 10) < kartenanzahl)
-            {
-                for (int i = 0; i < anzahlProSpieler; i++)
-                {
-                    for (int j = 0; j < spieleranzahl; j++)
-                    {
-                        spielerliste.get(j).gebeKarte(kartendeck.get(0));
-                        kartendeck.remove(0);
-                    }
-                }
-
-                stapel.add(0, kartendeck.get(0));
-                kartendeck.remove(0);
-                ziehStapel = kartendeck;
-            }
-            else
-            {
-                anzahlProSpieler = (kartenanzahl - 10) / spieleranzahl;
-                austeilen(nachMenge);
-            }
-        }
-
-    }
-
-    private void aktualisiereAktuelleKarte()
-    {
-        new Thread() {
-            public void run() {
-
-                while (i++ < 1000) {
-                    try {
-                        runOnUiThread(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                Karte temp = stapel.get(0);
-                                bild = temp.getBilder();
-
-                                int bildId = getResources().getIdentifier(bild , "drawable", getPackageName());
-                                iAktuelleKarte.setImageResource(bildId);
-                            }
-                        });
-                        Thread.sleep(600);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }.start();
-
-
-    }
-
-    private void gewaehltesAblegen(int pSpielernummer)
-    {
-        if(current == 0) {
-            //@TODO Kartennummer ist festgelegt...
-            ArrayList<Karte> temp = new ArrayList<Karte>();
-            if(!spielerliste.get(pSpielernummer).gibGewaehlteKarten().isEmpty())
-            {
-                for (int i = 0; i < spielerliste.get(pSpielernummer).gibGewaehlteKarten().size(); i++) {
-                    temp.add(spielerliste.get(pSpielernummer).gibGewaehlteKarten().get(i));
-                }
-                for (int i = 0; i < temp.size(); i++)
-                {
-                    stapel.add(0, temp.get(i));
-                }
-                aktualisiereAktuelleKarte();
-                aktualisiereHand(0);
-                hatGewonnen(spielerliste.get(current));
-                zugVorbei();
-                if (stapel.get(0).getNummer() == "8") {
-                    tStatus.setText("Spieler " + current + " wird übergangen!");
-                    zugVorbei();
-                }
-            }
-            else
-            {
-                tStatus.setText("Wähle zunächst eine Karte!");
-            }
-        }
-        else{
-            tStatus.setText("Du bist nicht dran!");
-        }
-    }
-
-    public boolean darfLegen(Karte pKarte)
-    {
-        Karte vgl = stapel.get(0);
-        switch(vgl.getNummer()) {
-            //@TODO Sonderfälle implementieren
-            case "bube":
-                break;
-            case "7":
-                break;
-            default:
-                if (vgl.getName().equals(pKarte.getName())) {
-                    return true;
-                } else {
-                    return false;
-                }
-
-            }
-        return false;
-    }
-
-    private void ziehen(int pSpielernummer)
-    {
-        Karte temp = ziehStapel.get(0);
-        ziehStapel.remove(0);
-        spielerliste.get(pSpielernummer).nehmeKarte(temp);
-    }
-
-    private void zugVorbei() {
-        if (current == (spieleranzahl -1)) {
-            current = 0;
-        } else {
-            current++;
-        }
-    }
-
-    private void hatGewonnen(Spieler pSpieler)
-    {
-        if (pSpieler.getHandzahl() == 0)
-        {
-            spielende();
-        }
-    }
-
-    private void bots()
-    {
-        while (spielerliste.get(current).istBot()) {
-            new Thread() {
-                public void run() {
-
-                    while (i++ < 1000) {
-                        try {
-                            runOnUiThread(new Runnable() {
-
-                                @Override
-                                public void run() {
-                                    tStatus.setText("Bot " + current + " ist dran!");
-                                }
-                            });
-                            Thread.sleep(600);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }.start();
-            botzug();
-        }
-
-        new Thread() {
-            public void run() {
-
-                while (i++ < 1000) {
-                    try {
-                        runOnUiThread(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                tStatus.setText("Du bist dran!");
-                            }
-                        });
-                        Thread.sleep(600);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }.start();
-    }
-
-
-
-    private void botzug()
-    {
-        new Thread() {
-            public void run() {
-
-                while (i++ < 1000) {
-                    try {
-                        runOnUiThread(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                tStatus.setText("Bot " + current + " ist am Zug.");
-                            }
-                        });
-                        Thread.sleep(600);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }.start();
-
-        ArrayList<Karte> temp = (((Bot) (spielerliste.get(current))).macheZug());
-        for (int i = 0; i < temp.size(); i++) {
-            stapel.add(0, temp.get(0));
-            temp.remove(0);
-        }
-        aktualisiereAktuelleKarte();
-        hatGewonnen(spielerliste.get(current));
-
-        new Thread() {
-            public void run() {
-
-                while (i++ < 1000) {
-                    try {
-                        runOnUiThread(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                tStatus.setText("Bot " + current + " hat gelegt.");
-                            }
-                        });
-                        Thread.sleep(600);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }.start();
-                    zugVorbei();
-                    if (stapel.get(0).getNummer() == "8") {
-                        new Thread() {
-                            public void run() {
-
-                                while (i++ < 1000) {
-                                    try {
-                                        runOnUiThread(new Runnable() {
-
-                                            @Override
-                                            public void run() {
-                                                tStatus.setText("Spieler " + current + " wird übergangen!");
-                                            }
-                                        });
-                                        Thread.sleep(600);
-                                    } catch (InterruptedException e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-                            }
-                        }.start();
-                        zugVorbei();
-                    }
-
-
-
-    }
-
-    private void spielende()
-    {
-        tStatus.setText("Spieler " + current + " hat gewonnen! Congrats!");
-    }
-
-    public void aktualisiereHand(int pSpielernummer)
-    {
-        for(int i = 0; i < lineareLayouts.size(); i++)
-        {
-            if(lineareLayouts.get(i).getChildCount() > 0)
-            {
-                lineareLayouts.get(i).removeAllViews();
-            }
-        }
-        imageButtons.clear();
-
-        for(int i = 0; i < spielerliste.get(pSpielernummer).gibHand().size(); i++)
-        {
-            kartentemp.add(spielerliste.get(pSpielernummer).gibHand().get(i));
-        }
-
-        //Test
-        zaehlen = 1;
-        int j = 0;
-        while(!kartentemp.isEmpty())
-        {
-            for(int i = 0; !kartentemp.isEmpty() && i < 5; i++)
-            //Test
-            {
-                bild = kartentemp.get(0).getBilder();
-                kartentemp.remove(0);
-                int bildId = getResources().getIdentifier(bild , "drawable", getPackageName());
-
-                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(140,190);
-
-                ImageButton btn = new ImageButton(this);
-                btn.setId(zaehlen + i);
-                btn.setImageResource(bildId);
-                btn.setLayoutParams(lp);
-                btn.setPadding(0,0,0,0);
-                btn.setScaleType(ImageView.ScaleType.FIT_CENTER);
-                btn.setOnClickListener(new View.OnClickListener() {
+                //update ui on UI thread
+                this.runOnUiThread(new Runnable() {
                     @Override
-                    public void onClick(View v)
-                    {
-                        for(int i = 0; i < imageButtons.size(); i++)
-                        {
-                            if(imageButtons.get(i).getId() == v.getId())
-                            {
-                                //@TODO Spielernummer festgelegt --> geht nur im SP
-                                spielerliste.get(0).waehleKarte(i);
-                                aktualisiereHand(0);
-                                break;
-                            }
-
-                        }
-
+                    public void run() {
+                        tStatus.setText(status);
+                        Log.d("testtest", "Hier");
                     }
                 });
-                lineareLayouts.get(j).addView(btn);
-                ImageButton button  = (ImageButton) findViewById(btn.getId());
-                imageButtons.add(button);
 
-            }
-            zaehlen = zaehlen + 5;
-            j++;
-       }
     }
 
 
-}
+            private void erzeugeSpieler() {
+                if (spielerliste.isEmpty()) {
+                    for (int i = 0; i < botanzahl; i++) {
+                        Bot bot = new Bot(i + "", this);
+                        spielerliste.add(0, bot);
+                    }
+
+                    for (int i = 0; i < playeranzahl; i++) {
+                        Player player = new Player(i + "", this);
+                        spielerliste.add(0, player);
+                    }
+                }
+            }
+
+            private void mischen() {
+                kartendeck = verwaltung.mischeKarten(kartendeck);
+            }
+
+            private void austeilen(boolean nachMenge) {
+                if (!nachMenge) {
+                    while (kartendeck.size() > 10) {
+                        for (int i = 0; i < spieleranzahl; i++) {
+                            spielerliste.get(i).gebeKarte(kartendeck.get(0));
+                            kartendeck.remove(0);
+                        }
+                    }
+                    stapel.add(0, kartendeck.get(0));
+                    kartendeck.remove(0);
+                    ziehStapel = kartendeck;
+                } else {
+                    if ((spieleranzahl * anzahlProSpieler + 10) < kartenanzahl) {
+                        for (int i = 0; i < anzahlProSpieler; i++) {
+                            for (int j = 0; j < spieleranzahl; j++) {
+                                spielerliste.get(j).gebeKarte(kartendeck.get(0));
+                                kartendeck.remove(0);
+                            }
+                        }
+
+                        stapel.add(0, kartendeck.get(0));
+                        kartendeck.remove(0);
+                        ziehStapel = kartendeck;
+                    } else {
+                        anzahlProSpieler = (kartenanzahl - 10) / spieleranzahl;
+                        austeilen(nachMenge);
+                    }
+                }
+
+            }
+
+            private void aktualisiereAktuelleKarte() {
+                Karte temp = stapel.get(0);
+                bild = temp.getBilder();
+
+                int bildId = getResources().getIdentifier(bild, "drawable", getPackageName());
+                iAktuelleKarte.setImageResource(bildId);
+            }
+
+            private void gewaehltesAblegen(int pSpielernummer) {
+                if (current == 0) {
+                    //@TODO Kartennummer ist festgelegt...
+                    ArrayList<Karte> temp = new ArrayList<Karte>();
+                    if (!spielerliste.get(pSpielernummer).gibGewaehlteKarten().isEmpty()) {
+                        for (int i = 0; i < spielerliste.get(pSpielernummer).gibGewaehlteKarten().size(); i++) {
+                            temp.add(spielerliste.get(pSpielernummer).gibGewaehlteKarten().get(i));
+                        }
+                        for (int i = 0; i < temp.size(); i++) {
+                            stapel.add(0, temp.get(i));
+                        }
+                        aktualisiereAktuelleKarte();
+                        aktualisiereHand(0);
+                        hatGewonnen(spielerliste.get(current));
+                        zugVorbei();
+                        if (stapel.get(0).getNummer() == "8") {
+                            tStatus.setText("Spieler " + current + " wird übergangen!");
+                            zugVorbei();
+                        }
+                    } else {
+                        tStatus.setText("Wähle zunächst eine Karte!");
+                    }
+                } else {
+                    tStatus.setText("Du bist nicht dran!");
+                }
+            }
+
+            public boolean darfLegen(ArrayList<Karte> pListe) {
+                Karte vgl = stapel.get(0);
+                for (int i = 0; i < pListe.size(); i++) {
+                    switch (vgl.getNummer()) {
+                        //@TODO Sonderfälle implementieren
+                        case "bube":
+                            break;
+                        case "7":
+                            break;
+                        default:
+                            if (vgl.getName().equals(pListe.get(i))) {
+                                return true;
+                            } else {
+                                return false;
+                            }
+
+                    }
+                }
+                return false;
+            }
+
+            private void ziehen(int pSpielernummer) {
+                Karte temp = ziehStapel.get(0);
+                ziehStapel.remove(0);
+                spielerliste.get(pSpielernummer).nehmeKarte(temp);
+            }
+
+            private void zugVorbei() {
+                if (current == (spieleranzahl - 1)) {
+                    current = 0;
+                } else {
+                    current++;
+                }
+            }
+
+            private void hatGewonnen(Spieler pSpieler) {
+                if (pSpieler.getHandzahl() == 0) {
+                    spielende();
+                }
+            }
+
+            private void bots() {
+                while (spielerliste.get(current).istBot()) {
+                    setzeStatus("Bot " + current + " ist dran!");
+                    verwaltung.delay(1000);
+                    botzug();
+                }
+                setzeStatus("Du bist dran!");
+            }
+
+
+            private void botzug() {
+                if (spielerliste.get(current).istBot()) {
+                    setzeStatus("Bot " + current + " ist am Zug.");
+                    Log.d("testtest", "Bot " + current + " ist am Zug.");
+                    verwaltung.delay(1000);
+                    ArrayList<Karte> temp = (((Bot) (spielerliste.get(current))).macheZug());
+                    for (int i = 0; i < temp.size(); i++) {
+                        stapel.add(0, temp.get(0));
+                        temp.remove(0);
+                    }
+                    aktualisiereAktuelleKarte();
+                    hatGewonnen(spielerliste.get(current));
+                    setzeStatus("Bot " + current + " hat gelegt");
+                    Log.d("testtest","Bot " + current + " hat gelegt");
+                    verwaltung.delay(500);
+                    zugVorbei();
+                    if (stapel.get(0).getNummer() == "8") {
+                        setzeStatus("Spieler " + current + " wird übergangen!");
+                        verwaltung.delay(500);
+                        zugVorbei();
+                    }
+                } else {
+                    setzeStatus("Du bist dran.");
+                }
+            }
+
+            private void spielende() {
+                setzeStatus("Spieler " + current + " hat gewonnen! Congrats!");
+            }
+
+            public void aktualisiereHand(int pSpielernummer) {
+                for (int i = 0; i < lineareLayouts.size(); i++) {
+                    if (lineareLayouts.get(i).getChildCount() > 0) {
+                        lineareLayouts.get(i).removeAllViews();
+                    }
+                }
+                imageButtons.clear();
+
+                for (int i = 0; i < spielerliste.get(pSpielernummer).gibHand().size(); i++) {
+                    kartentemp.add(spielerliste.get(pSpielernummer).gibHand().get(i));
+                }
+
+                //Test
+                zaehlen = 1;
+                int j = 0;
+                while (!kartentemp.isEmpty()) {
+                    for (int i = 0; !kartentemp.isEmpty() && i < 5; i++)
+                    //Test
+                    {
+                        bild = kartentemp.get(0).getBilder();
+                        kartentemp.remove(0);
+                        int bildId = getResources().getIdentifier(bild, "drawable", getPackageName());
+
+                        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(140, 190);
+
+                        ImageButton btn = new ImageButton(this);
+                        btn.setId(zaehlen + i);
+                        btn.setImageResource(bildId);
+                        btn.setLayoutParams(lp);
+                        btn.setPadding(0, 0, 0, 0);
+                        btn.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                        btn.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                for (int i = 0; i < imageButtons.size(); i++) {
+                                    if (imageButtons.get(i).getId() == v.getId()) {
+                                        //@TODO Spielernummer festgelegt --> geht nur im SP
+                                        spielerliste.get(0).waehleKarte(i);
+                                        aktualisiereHand(0);
+                                        break;
+                                    }
+
+                                }
+
+                            }
+                        });
+                        lineareLayouts.get(j).addView(btn);
+                        ImageButton button = (ImageButton) findViewById(btn.getId());
+                        imageButtons.add(button);
+
+                    }
+                    zaehlen = zaehlen + 5;
+                    j++;
+                }
+            }
+        }
+
+
+
