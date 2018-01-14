@@ -46,12 +46,8 @@ public class Spiel extends AppCompatActivity implements View.OnClickListener
     public LinearLayout llhorizontal9;
     public LinearLayout llhorizontal10;
 
-
-
     private Button bAblegen;
     private Button bZiehen;
-
-    private TextView beispiel;
 
     private int kartenanzahl;
     private int botanzahl;
@@ -60,7 +56,8 @@ public class Spiel extends AppCompatActivity implements View.OnClickListener
     private int anzahlProSpieler;
     private int zaehlen;
     private int thread = 0;
-    private int spielgeschwindigkeit = 100;
+
+    private int spielgeschwindigkeit = 500;
 
     private int current = 0;
 
@@ -345,7 +342,8 @@ public class Spiel extends AppCompatActivity implements View.OnClickListener
 
             private void bots()
             {
-                thread = 0;
+                //-1, damit beim ersten durchlauf ein Delay von 1s entsteht(defaultcase)
+                thread = -1;
                 new Thread() {
                     public void run() {
                             while (thread++ < 3) {
