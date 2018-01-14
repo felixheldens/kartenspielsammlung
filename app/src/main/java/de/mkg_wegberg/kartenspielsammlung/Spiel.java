@@ -1,5 +1,6 @@
 package de.mkg_wegberg.kartenspielsammlung;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
@@ -59,6 +60,7 @@ public class Spiel extends AppCompatActivity implements View.OnClickListener
     private int anzahlProSpieler;
     private int zaehlen;
     private int thread = 0;
+    private int spielgeschwindigkeit = 100;
 
     private int current = 0;
 
@@ -131,11 +133,18 @@ public class Spiel extends AppCompatActivity implements View.OnClickListener
         {
             case R.id.bAblegenId:
                 gewaehltesAblegen(0);
+                if(spielerliste.get(0).getHandzahl() != 0)
+                {
+                    bots();
+                }
+                else
+                {
+                    spielende();
+                }
                 break;
             case R.id.bZiehenId:
-                botzug();
-                //runThread();
-                //ziehen(0);
+                ziehen(0);
+                //@TODO Spielernummer festgelegt.
                 break;
 
             default: break;
@@ -177,24 +186,18 @@ public class Spiel extends AppCompatActivity implements View.OnClickListener
     {
         status = pStatus;
 
-        new Thread() {
-            public void run() {
-                    try {
-                        runOnUiThread(new Runnable() {
+        try {
+            runOnUiThread(new Runnable() {
 
-                            @Override
-                            public void run() {
-                                tStatus.setText(status);
-                            }
-                        });
-                        Thread.sleep(500);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+                @Override
+                public void run() {
+                    tStatus.setText(status);
                 }
-
-        }.start();
-
+            });
+            Thread.sleep(300);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -280,7 +283,6 @@ public class Spiel extends AppCompatActivity implements View.OnClickListener
 
             private void gewaehltesAblegen(int pSpielernummer) {
                 if (current == 0) {
-                    //@TODO Kartennummer ist festgelegt...
                     ArrayList<Karte> temp = new ArrayList<Karte>();
                     if (!spielerliste.get(pSpielernummer).gibGewaehlteKarten().isEmpty()) {
                         for (int i = 0; i < spielerliste.get(pSpielernummer).gibGewaehlteKarten().size(); i++) {
@@ -290,8 +292,8 @@ public class Spiel extends AppCompatActivity implements View.OnClickListener
                             stapel.add(0, temp.get(i));
                         }
                         aktualisiereAktuelleKarte();
-                        aktualisiereHand(0);
-                        hatGewonnen(spielerliste.get(current));
+                        aktualisiereHand(pSpielernummer);
+                        hatGewonnen(spielerliste.get(pSpielernummer));
                         zugVorbei();
                         if (stapel.get(0).getNummer() == "8") {
                             tStatus.setText("Spieler " + current + " wird übergangen!");
@@ -320,7 +322,6 @@ public class Spiel extends AppCompatActivity implements View.OnClickListener
                             } else {
                                 return false;
                             }
-
                     }
                 }
                 return false;
@@ -335,55 +336,99 @@ public class Spiel extends AppCompatActivity implements View.OnClickListener
             private void zugVorbei() {
                 if (current == (spieleranzahl - 1)) {
                     current = 0;
+                    tStatus.setText("Du bist dran!");
                 } else {
                     current++;
+                    thread = 0;
+                }
+            }
+
+            private void bots()
+            {
+                thread = 0;
+                new Thread() {
+                    public void run() {
+                            while (thread++ < 3) {
+                                try {
+                                    runOnUiThread(new Runnable() {
+
+                                        @Override
+                                        public void run() {
+                                            //Absicherung gegen unerwünschtes Abstürzen
+                                            if(spielerliste.get(current).istBot()) {
+                                                switch (thread) {
+                                                    case 1:
+                                                        botzug1();
+                                                        break;
+                                                    case 2:
+                                                        botzug2();
+                                                        break;
+                                                    case 3:
+                                                        botzug3();
+                                                        break;
+                                                    default:
+                                                        break;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                tStatus.setText("Fehler 1: Aktueller spieler ist kein Bot!");
+                                            }
+                                        }
+                                    });
+                                    Thread.sleep(spielgeschwindigkeit);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+
+                    }
+
+                    }
+                }.start();
+
+            }
+
+
+            private void botzug1() {
+                tStatus.setText("Bot " + current + " ist am Zug.");
+            }
+
+            private void botzug2()
+            {
+                ArrayList<Karte> temp = (((Bot) (spielerliste.get(current))).macheZug());
+                for (int i = 0; i < temp.size(); i++) {
+                    stapel.add(0, temp.get(0));
+                    temp.remove(0);
+                }
+                aktualisiereAktuelleKarte();
+                tStatus.setText("Bot " + current + " hat gelegt");
+
+            }
+
+            private void botzug3()
+            {
+                hatGewonnen(spielerliste.get(current));
+                zugVorbei();
+                if (stapel.get(0).getNummer() == "8") {
+                    tStatus.setText("Spieler " + current + " wird übergangen!");
+                    zugVorbei();
                 }
             }
 
             private void hatGewonnen(Spieler pSpieler) {
                 if (pSpieler.getHandzahl() == 0) {
-                    spielende();
+                  spielende();
                 }
             }
 
-            private void bots() {
-                while (spielerliste.get(current).istBot()) {
-                    setzeStatus("Bot " + current + " ist dran!");
-                    verwaltung.delay(1000);
-                    botzug();
-                }
-                setzeStatus("Du bist dran!");
-            }
 
-
-            private void botzug() {
-                if (spielerliste.get(current).istBot()) {
-                    setzeStatus("Bot " + current + " ist am Zug.");
-                    Log.d("testtest", "Bot " + current + " ist am Zug.");
-                   // verwaltung.delay(2000);
-                    ArrayList<Karte> temp = (((Bot) (spielerliste.get(current))).macheZug());
-                    for (int i = 0; i < temp.size(); i++) {
-                        stapel.add(0, temp.get(0));
-                        temp.remove(0);
-                    }
-                    aktualisiereAktuelleKarte();
-                    hatGewonnen(spielerliste.get(current));
-                    setzeStatus("Bot " + current + " hat gelegt");
-                    Log.d("testtest","Bot " + current + " hat gelegt");
-                    //verwaltung.delay(2000);
-                    zugVorbei();
-                    if (stapel.get(0).getNummer() == "8") {
-                        setzeStatus("Spieler " + current + " wird übergangen!");
-                        verwaltung.delay(500);
-                        zugVorbei();
-                    }
-                } else {
-                    setzeStatus("Du bist dran.");
-                }
-            }
 
             private void spielende() {
                 setzeStatus("Spieler " + current + " hat gewonnen! Congrats!");
+                Intent oeffneEndscreen = new Intent(getBaseContext(), EndScreen.class);
+                oeffneEndscreen.putExtra("pHatGewonnen", spielerliste.get(0).gibHand().isEmpty());
+                startActivity(oeffneEndscreen);
+                finish();
             }
 
             public void aktualisiereHand(int pSpielernummer) {

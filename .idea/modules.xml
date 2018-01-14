@@ -3,8 +3,9 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/kartenspielsammlung.iml" filepath="$PROJECT_DIR$/kartenspielsammlung.iml" />
       <module fileurl="file://C:\Users\Panasonic_CF_52\Desktop\kartenspielsammlunggithub\kartenspielsammlung.iml" filepath="C:\Users\Panasonic_CF_52\Desktop\kartenspielsammlunggithub\kartenspielsammlung.iml" />
-      <module fileurl="file://$PROJECT_DIR$/kartenspielsammlunggithub.iml" filepath="$PROJECT_DIR$/kartenspielsammlunggithub.iml" />
+      <module fileurl="file://E:\Felix\Schule\Informatik\VCS\kartenspielsammlung\kartenspielsammlunggithub.iml" filepath="E:\Felix\Schule\Informatik\VCS\kartenspielsammlung\kartenspielsammlunggithub.iml" />
     </modules>
   </component>
 </project>
