@@ -1,6 +1,5 @@
 package de.mkg_wegberg.kartenspielsammlung;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
@@ -16,7 +15,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.Timer;
 
 public class Spiel extends AppCompatActivity implements View.OnClickListener
 {
@@ -136,6 +134,7 @@ public class Spiel extends AppCompatActivity implements View.OnClickListener
                 break;
             case R.id.bZiehenId:
                 botzug();
+                //runThread();
                 //ziehen(0);
                 break;
 
@@ -178,15 +177,47 @@ public class Spiel extends AppCompatActivity implements View.OnClickListener
     {
         status = pStatus;
 
-                //update ui on UI thread
-                this.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        tStatus.setText(status);
-                        Log.d("testtest", "Hier");
-                    }
-                });
+        new Thread() {
+            public void run() {
+                    try {
+                        runOnUiThread(new Runnable() {
 
+                            @Override
+                            public void run() {
+                                tStatus.setText(status);
+                            }
+                        });
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+        }.start();
+
+
+    }
+
+    private void runThread() {
+
+        new Thread() {
+            public void run() {
+                while (thread++ < 1000) {
+                    try {
+                        runOnUiThread(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                tStatus.setText("#" + thread);
+                            }
+                        });
+                        Thread.sleep(300);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }.start();
     }
 
 
@@ -329,7 +360,7 @@ public class Spiel extends AppCompatActivity implements View.OnClickListener
                 if (spielerliste.get(current).istBot()) {
                     setzeStatus("Bot " + current + " ist am Zug.");
                     Log.d("testtest", "Bot " + current + " ist am Zug.");
-                    verwaltung.delay(1000);
+                   // verwaltung.delay(2000);
                     ArrayList<Karte> temp = (((Bot) (spielerliste.get(current))).macheZug());
                     for (int i = 0; i < temp.size(); i++) {
                         stapel.add(0, temp.get(0));
@@ -339,7 +370,7 @@ public class Spiel extends AppCompatActivity implements View.OnClickListener
                     hatGewonnen(spielerliste.get(current));
                     setzeStatus("Bot " + current + " hat gelegt");
                     Log.d("testtest","Bot " + current + " hat gelegt");
-                    verwaltung.delay(500);
+                    //verwaltung.delay(2000);
                     zugVorbei();
                     if (stapel.get(0).getNummer() == "8") {
                         setzeStatus("Spieler " + current + " wird übergangen!");
