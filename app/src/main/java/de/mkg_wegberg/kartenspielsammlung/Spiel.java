@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
@@ -141,7 +140,6 @@ public class Spiel extends AppCompatActivity implements View.OnClickListener
                 break;
             case R.id.bZiehenId:
                 ziehen(0);
-                //@TODO Spielernummer festgelegt.
                 break;
 
             default: break;
@@ -179,48 +177,6 @@ public class Spiel extends AppCompatActivity implements View.OnClickListener
         return super.onKeyDown(keyCode, event);
     }
 
-    private void setzeStatus(String pStatus)
-    {
-        status = pStatus;
-
-        try {
-            runOnUiThread(new Runnable() {
-
-                @Override
-                public void run() {
-                    tStatus.setText(status);
-                }
-            });
-            Thread.sleep(300);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    private void runThread() {
-
-        new Thread() {
-            public void run() {
-                while (thread++ < 1000) {
-                    try {
-                        runOnUiThread(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                tStatus.setText("#" + thread);
-                            }
-                        });
-                        Thread.sleep(300);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }.start();
-    }
-
-
             private void erzeugeSpieler() {
                 if (spielerliste.isEmpty()) {
                     for (int i = 0; i < botanzahl; i++) {
@@ -243,7 +199,7 @@ public class Spiel extends AppCompatActivity implements View.OnClickListener
                 if (!nachMenge) {
                     while (kartendeck.size() > 10) {
                         for (int i = 0; i < spieleranzahl; i++) {
-                            spielerliste.get(i).gebeKarte(kartendeck.get(0));
+                            spielerliste.get(i).nehmeKarte(kartendeck.get(0));
                             kartendeck.remove(0);
                         }
                     }
@@ -254,7 +210,7 @@ public class Spiel extends AppCompatActivity implements View.OnClickListener
                     if ((spieleranzahl * anzahlProSpieler + 10) < kartenanzahl) {
                         for (int i = 0; i < anzahlProSpieler; i++) {
                             for (int j = 0; j < spieleranzahl; j++) {
-                                spielerliste.get(j).gebeKarte(kartendeck.get(0));
+                                spielerliste.get(j).nehmeKarte(kartendeck.get(0));
                                 kartendeck.remove(0);
                             }
                         }
@@ -288,6 +244,7 @@ public class Spiel extends AppCompatActivity implements View.OnClickListener
                         for (int i = 0; i < temp.size(); i++) {
                             stapel.add(0, temp.get(i));
                         }
+                        temp.clear();
                         aktualisiereAktuelleKarte();
                         aktualisiereHand(pSpielernummer);
                         hatGewonnen(spielerliste.get(pSpielernummer));
@@ -304,23 +261,24 @@ public class Spiel extends AppCompatActivity implements View.OnClickListener
                 }
             }
 
-            public boolean darfLegen(ArrayList<Karte> pListe) {
-                Karte vgl = stapel.get(0);
-                for (int i = 0; i < pListe.size(); i++) {
+            public boolean darfLegen(Karte pZuLegen) {
+                Karte vgl = pZuLegen;
                     switch (vgl.getNummer()) {
-                        //@TODO Sonderfälle implementieren
                         case "bube":
                             break;
                         case "7":
                             break;
                         default:
-                            if (vgl.getName().equals(pListe.get(i))) {
+                            if (vgl.getNummer().equals(stapel.get(0).getNummer())) {
                                 return true;
-                            } else {
+                            }
+                            else if(vgl.getFarbe().equals(stapel.get(0).getFarbe())){
+                                return true;
+                            }
+                            else{
                                 return false;
                             }
                     }
-                }
                 return false;
             }
 
@@ -328,6 +286,10 @@ public class Spiel extends AppCompatActivity implements View.OnClickListener
                 Karte temp = ziehStapel.get(0);
                 ziehStapel.remove(0);
                 spielerliste.get(pSpielernummer).nehmeKarte(temp);
+                if(!spielerliste.get(pSpielernummer).istBot())
+                {
+                    aktualisiereHand(pSpielernummer);
+                }
             }
 
             private void zugVorbei() {
@@ -422,7 +384,7 @@ public class Spiel extends AppCompatActivity implements View.OnClickListener
 
 
             private void spielende() {
-                setzeStatus("Spieler " + current + " hat gewonnen! Congrats!");
+                tStatus.setText("Spieler " + current + " hat gewonnen! Congrats!");
                 Intent oeffneEndscreen = new Intent(getBaseContext(), EndScreen.class);
                 oeffneEndscreen.putExtra("pHatGewonnen", spielerliste.get(0).gibHand().isEmpty());
                 startActivity(oeffneEndscreen);
@@ -484,7 +446,13 @@ public class Spiel extends AppCompatActivity implements View.OnClickListener
                     j++;
                 }
             }
-        }
+
+
+    public int bewertung(Karte pKarte)
+    {
+
+    }
+}
 
 
 

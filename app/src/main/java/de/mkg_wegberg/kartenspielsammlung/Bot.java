@@ -9,6 +9,10 @@ import java.util.ArrayList;
 public class Bot extends Spieler
 {
     private String name;
+    private int schwierigkeit = 1;
+    private ArrayList<Karte> gewaehlteKarten = new ArrayList<Karte>();
+
+    private ArrayList<Karte> moeglich = new ArrayList<Karte>();
 
     public Bot(String pName, Spiel pSpiel)
     {
@@ -16,20 +20,48 @@ public class Bot extends Spieler
         istBot = true;
     }
 
-    public ArrayList<Karte> macheZug()
+    public void macheZug()
     {
         if (!hand.isEmpty())
         {
-            waehleKarte(0);
-            ArrayList<Karte> temp  = super.gibGewaehlteKarten();
-            return temp;
+            for(int i = 0; i < hand.size(); i++){
+                if(spiel.darfLegen(hand.get(i))){
+                    gewaehlteKarten.add(hand.get(i));
+                    hand.remove(i);
+                }
+            }
+            if(gewaehlteKarten.size() > 1 && schwierigkeit > 1){
+                holeWerte(moeglich);
+            }
+
+        }
+    }
+
+    private ArrayList legen(int pIndex)
+    {
+        waehleKarte(pIndex);
+        ArrayList<Karte> temp  = super.gibGewaehlteKarten();
+
+        return temp;
+    }
+
+    private void holeWerte(){
+        for(int i = 0; i < gewaehlteKarten.size(); i++)
+        {
+            gewaehlteKarten.get(i).setzeWert(spiel.bewertung(gewaehlteKarten.get(i)));
         }
 
-        else{
-        return null;
+        int bestes = 0;
+        for(int i = 0; i < gewaehlteKarten.size(); i++){
+            if(gewaehlteKarten.get(i).holeWert() > bestes)
+            {
+
+            }
+        }
     }
 
-    }
+
+
 
 
 

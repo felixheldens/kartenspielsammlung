@@ -15,6 +15,8 @@ public class Karte
     private boolean zeigeVorderseite;
     private boolean markiert;
 
+    private int wert = 0;
+
     public Karte(String pFarbe, String pNummer, boolean pZeigeVorderseite)
     {
         farbe = pFarbe;
@@ -79,6 +81,16 @@ public class Karte
     public boolean istMarkiert()
     {
         return markiert;
+    }
+
+    public void setzeWert(int pWert)
+    {
+        wert = pWert;
+    }
+
+    public int holeWert()
+    {
+        return wert;
     }
 
 

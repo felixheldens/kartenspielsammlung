@@ -13,17 +13,13 @@ public class Spieler {
 
     public String name;
     public boolean istBot;
-    private Spiel spiel;
+    public Spiel spiel;
 
 
     public Spieler(String pName, Spiel pSpiel)
     {
         name = pName;
         spiel = pSpiel;
-    }
-
-    public void gebeKarte(Karte pKarte) {
-        hand.add(0, pKarte);
     }
 
     public void nehmeKarte(Karte pKarte)
